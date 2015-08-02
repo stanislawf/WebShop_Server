@@ -96,10 +96,10 @@ public class DataGeneration {
         EntityManager em = emf.createEntityManager();
 
         em.getTransaction().begin();
-        Role role = (Role) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", "User").getSingleResult();
+//        Role role = (Role) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", "User").getSingleResult();
 
         List<Role> accountRoles = new ArrayList();
-        accountRoles.add(role);
+//        accountRoles.add(role);
 
         Role roleAdmin = (Role) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", "Admin").getSingleResult();
         accountRoles.add(roleAdmin);
