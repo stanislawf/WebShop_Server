@@ -15,6 +15,8 @@ import info.novatec.webshop.entities.OrderLine;
 import info.novatec.webshop.entities.Orders;
 import info.novatec.webshop.entities.Role;
 import info.novatec.webshop.helpers.LoadArticleProperties;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,10 +46,10 @@ public class DataGeneration {
 //        testCreateCategories();
 //        testCreateArticles();
 //    }
-    
+//    
 //     Als 2. AusfÃ¼hren
 //    @Test
-//    public void testCreateData(){
+//    public void testCreateData() throws NoSuchAlgorithmException{
 //      testCreateAccountWithRole();
 //    }
     
@@ -91,7 +93,7 @@ public class DataGeneration {
 
     }
 
-    private void testCreateAccountWithRole() {
+    private void testCreateAccountWithRole() throws NoSuchAlgorithmException {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
         EntityManager em = emf.createEntityManager();
 
@@ -109,7 +111,9 @@ public class DataGeneration {
         account.setLastName("Freund");
         account.setPhoneNumber("0172/3607116");
         account.setEmail("stas.2HG@gmx.net");
-        account.setPassword("09876543210");
+        String password = "09876543210";
+        String md5Password = pwSec(password);
+        account.setPassword(md5Password);
         String inputStr = "25-06-1987";
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date inputDate = null;
@@ -144,6 +148,20 @@ public class DataGeneration {
 
         em.getTransaction().commit();
         em.close();
+    }
+    
+    public static String pwSec(String vPass) throws NoSuchAlgorithmException{
+        /* Berechnung */
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        md5.update(vPass.getBytes());
+        byte[] result = md5.digest();
+ 
+        /* Ausgabe */
+        StringBuffer hexString = new StringBuffer();
+        for (int i=0; i<result.length; i++) {
+            hexString.append(Integer.toHexString(0xFF & result[i]));
+        }
+        return hexString.toString();
     }
 
     private void testCreateCategories() {
