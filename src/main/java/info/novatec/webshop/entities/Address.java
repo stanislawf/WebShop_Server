@@ -55,7 +55,7 @@ public class Address implements Serializable {
     @NotNull
     private String country;
     
-    @NotNull
+    
     @ManyToOne(targetEntity = Account.class)
     private Account account;
     
