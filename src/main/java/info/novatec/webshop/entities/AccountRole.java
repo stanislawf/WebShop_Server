@@ -5,9 +5,12 @@
  */
 package info.novatec.webshop.entities;
 
+import info.novatec.webshop.enums.RoleType;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,22 +25,25 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "Role.findRoleByRoleType", query = "SELECT role FROM Role role WHERE role.roleType = :roleType")   
+    @NamedQuery(name = "Role.findRoleByRoleType", query = "SELECT rl FROM AccountRole rl WHERE rl.roleType = :roleType")
 })
-public class Role implements Serializable {
-    
-    //--------------------Attribute & Relationen--------------------//
-    
+
+public class AccountRole implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    @NotNull
-    private String  roleType;
 
-    
-    @ManyToMany(targetEntity = Account.class, mappedBy = "roles")
-    private List<Account> account;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private RoleType roleType;
+
+    @NotNull
+    //Das könnte aber auch Null sein. Ein Account muss wissen welche Rolle es hat aber eine Rolle muss ja nicht wissen welche Accounts diese Rolle haben.
+    @ManyToMany(mappedBy = "roles")
+    private List<AccountUser> account;
 
     public Long getId() {
         return id;
@@ -47,22 +53,19 @@ public class Role implements Serializable {
         this.id = id;
     }
 
-    public String getRoleType() {
+    public RoleType getRoleType() {
         return roleType;
     }
 
-    public void setRoleType(String roleType) {
+    public void setRoleType(RoleType roleType) {
         this.roleType = roleType;
     }
 
-    public List<Account> getAccount() {
+    public List<AccountUser> getAccount() {
         return account;
     }
 
-    public void setAccount(List<Account> account) {
+    public void setAccount(List<AccountUser> account) {
         this.account = account;
     }
-
-
-    
 }

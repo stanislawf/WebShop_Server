@@ -7,11 +7,12 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -23,25 +24,18 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "Address.findAddressByID", query = "SELECT address FROM Address address WHERE address.id = :id"),
-    @NamedQuery(name = "Address.findAddressByAccountID", query = "SELECT address FROM Address address WHERE address.account = :account")
+        @NamedQuery(name = "Address.findAddressByAddressID", query = "SELECT addr FROM Address addr WHERE addr.id = :id"),
+        @NamedQuery(name = "Address.findAddressByAccount", query = "SELECT addr FROM Address addr WHERE :accounts member of addr.accounts"),
+          @NamedQuery(name = "Address.findAddressByStreet", query = "SELECT addr FROM Address addr WHERE addr.street = :street"),
+            @NamedQuery(name = "Address.findAddressByHomeAddress", query = "SELECT addr FROM Address addr WHERE addr.ishomeAddress = :flag AND addr.accounts = :accounts"),
 })
 public class Address implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     
-    //--------------------Attribute & Relationen--------------------//
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
-    
-    //Senden an eine andere Person ---> anderes Modell
- 
-    @NotNull
-    private String firstName;
-    
-    @NotNull
-    private String lastName;
     
     @NotNull
     private String street;
@@ -55,17 +49,21 @@ public class Address implements Serializable {
     @NotNull
     private String country;
     
+    @NotNull
+    private boolean ishomeAddress;
     
-    @ManyToOne(targetEntity = Account.class)
-    private Account account;
+    @NotNull
+    @ManyToMany(mappedBy = "addresses", targetEntity = AccountUser.class)
+    private List<Account> accounts;
     
-   
-    @OneToMany(targetEntity = Orders.class, mappedBy = "deliveryAddress")    
-    private List<Orders> deliveryOrder;
     
-   
-    @OneToMany(targetEntity = Orders.class, mappedBy = "billingAddress")
-    private List<Orders> billingOrder;
+    @ElementCollection
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "deliveryAddress")    
+    private List<PurchaseOrder> deliveryOrder;
+    
+    @ElementCollection
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "billingAddress")
+    private List<PurchaseOrder> billingOrder;
 
     public Long getId() {
         return id;
@@ -73,22 +71,6 @@ public class Address implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getStreet() {
@@ -123,30 +105,37 @@ public class Address implements Serializable {
         this.country = country;
     }
 
-    public Account getAccount() {
-        return account;
+    public List<Account> getAccount() {
+        return accounts;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setAccount(List<Account> accounts) {
+        this.accounts = accounts;
     }
 
-    public List<Orders> getDeliveryOrder() {
+    public List<PurchaseOrder> getDeliveryOrder() {
         return deliveryOrder;
     }
 
-    public void setDeliveryOrder(List<Orders> deliveryOrder) {
+    public void setDeliveryOrder(List<PurchaseOrder> deliveryOrder) {
         this.deliveryOrder = deliveryOrder;
     }
 
-    public List<Orders> getBillingOrder() {
+    public List<PurchaseOrder> getBillingOrder() {
         return billingOrder;
     }
 
-    public void setBillingOrder(List<Orders> billingOrder) {
+    public void setBillingOrder(List<PurchaseOrder> billingOrder) {
         this.billingOrder = billingOrder;
     }
-    
 
+    public boolean isIshomeAddress() {
+        return ishomeAddress;
+    }
+
+    public void setIshomeAddress(boolean ishomeAddress) {
+        this.ishomeAddress = ishomeAddress;
+    }
+    
     
 }

@@ -9,10 +9,13 @@ import info.novatec.webshop.entities.Article;
 import info.novatec.webshop.entities.Category;
 import info.novatec.webshop.persistence.CategoryManager;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
@@ -28,20 +31,39 @@ public class CategoryService implements CategoryManager {
 
     @Override
     public List<Category> getAllCategories() {
-        return (List<Category>) em.createNamedQuery("Category.findAllCategories").getResultList();
+        List<Category> categoryList = null;
+        try {
+            categoryList = (List<Category>) em.createNamedQuery("Category.findAllCategories").getResultList();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(CategoryService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return categoryList;
     }
 
     @Override
     public List<Article> getAllArticleByCategoryName(String name) {
-        return (List<Article>) em.createNamedQuery("Category.findAllArticlesByCategoryName").setParameter("name", name).getResultList();
+        List<Article> categoryArticleList = null;
+        try {
+            categoryArticleList = (List<Article>) em.createNamedQuery("Category.findAllArticlesByCategoryName").setParameter("name", name).getResultList();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(CategoryService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return categoryArticleList;
     }
 
     @Override
     public Category getCategoryByID(Long id) {
-        return (Category) em.createNamedQuery("Category.findCategoryByID").setParameter("id", id).getSingleResult();
+        Category category = null;
+        try {
+            category = (Category) em.createNamedQuery("Category.findCategoryByCategoryID").setParameter("id", id).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(CategoryService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return category;
     }
 
     @Override
+//    --> JavaDoc
     public boolean createCategory(Category category) {
         em.persist(category);
         return em.contains(category);
@@ -49,6 +71,12 @@ public class CategoryService implements CategoryManager {
 
     @Override
     public Category getCategoryByNAme(String name) {
-        return (Category) em.createNamedQuery("Category.findCategoryByName").setParameter("name", name).getSingleResult();
+        Category category = null;
+        try {
+            category = (Category) em.createNamedQuery("Category.findCategoryByCategoryName").setParameter("name", name).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(CategoryService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return category;
     }
 }

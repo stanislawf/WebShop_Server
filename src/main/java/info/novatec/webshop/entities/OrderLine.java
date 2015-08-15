@@ -6,6 +6,8 @@
 package info.novatec.webshop.entities;
 
 import java.io.Serializable;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,33 +23,36 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "Orderline.findOrderlineByID", query = "SELECT orderLine FROM OrderLine orderLine WHERE OrderLine.id = :id")
+    @NamedQuery(name = "Orderline.findOrderlineByOrderLineID", query = "SELECT orderL FROM OrderLine orderL WHERE orderL.id = :id")
 })
 public class OrderLine implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     @NotNull
-    private Byte quantity;
-    
+    private int quantity;
+
     @NotNull
-    @ManyToOne(targetEntity = Article.class)
+    @ManyToOne
     private Article article;
     
     @NotNull
-    @ManyToOne(targetEntity = Orders.class)
-    private Orders order;
+    @ManyToOne
+    private PurchaseOrder order;
 
     public Long getId() {
         return id;
     }
 
-    public Orders getOrder() {
+    public PurchaseOrder getOrder() {
         return order;
     }
 
-    public void setOrder(Orders order) {
+    public void setOrder(PurchaseOrder order) {
         this.order = order;
     }
 
@@ -55,11 +60,11 @@ public class OrderLine implements Serializable {
         this.id = id;
     }
 
-    public Byte getQuantity() {
+    public int getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Byte quantity) {
+    public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
 
@@ -70,5 +75,4 @@ public class OrderLine implements Serializable {
     public void setArticle(Article article) {
         this.article = article;
     }
-    
 }

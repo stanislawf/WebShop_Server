@@ -6,8 +6,10 @@
 package info.novatec.webshop.entities;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,7 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -25,46 +26,45 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "Orders.findOrdersByID", query = "SELECT orders FROM Orders orders WHERE Orders.id = :id"),
-            @NamedQuery(name = "Orders.findOrdersByAccount", query = "SELECT orders FROM Orders orders WHERE Orders.account = :account")
-
+    @NamedQuery(name = "Orders.findOrdersByOrderID", query = "SELECT ord FROM PurchaseOrder ord WHERE ord.id = :id"),
+    @NamedQuery(name = "Orders.findOrdersByAccount", query = "SELECT ord FROM PurchaseOrder ord WHERE ord.account = :account")
 })
-public class Orders implements Serializable {
+public class PurchaseOrder implements Serializable {
     
-      //--------------------Attribute & Relationen--------------------//
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     @NotNull
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date orderDate;
-        
+    private LocalDate orderDate;
+
     @NotNull
-    private double  totalPrice;
-    
-   
-    @ManyToOne(targetEntity = Account.class)
+    private double totalPrice;
+
+    @NotNull
+    @ManyToOne
     private Account account;
-    
- 
-    //@NotNull adden
-    @OneToMany(targetEntity = OrderLine.class, mappedBy = "order")
+
+    @NotNull
+    @ElementCollection
+    @OneToMany(cascade = CascadeType.ALL, targetEntity = OrderLine.class, mappedBy = "order")
     private List<OrderLine> orderLines;
-    
+
     @NotNull
-    @ManyToOne(targetEntity = Address.class)
+    @ManyToOne(cascade = CascadeType.ALL)
     private Address deliveryAddress;
-    
+
     @NotNull
-    @ManyToOne(targetEntity = Address.class)
+    @ManyToOne(cascade = CascadeType.ALL)
     private Address billingAddress;
-    
-    @ManyToOne(targetEntity = CreditCard.class, optional = true)    
+
+    @ManyToOne(cascade = CascadeType.ALL, optional = true)
     private CreditCard creditCard;
-    
+
     @NotNull
-    @ManyToOne(targetEntity = Bill.class)
+    @ManyToOne(cascade = CascadeType.ALL)
     private Bill bill;
 
     public Long getId() {
@@ -75,11 +75,11 @@ public class Orders implements Serializable {
         this.id = id;
     }
 
-    public Date getOrderDate() {
+    public LocalDate getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setOrderDate(LocalDate orderDate) {
         this.orderDate = orderDate;
     }
 
@@ -88,12 +88,12 @@ public class Orders implements Serializable {
     }
 
     public void setTotalPrice(List<OrderLine> orderlines) {
-        for(OrderLine orderline : orderlines){
+        for (OrderLine orderline : orderlines) {
             this.totalPrice += (orderline.getQuantity() * orderline.getArticle().getPrice());
         }
     }
-    
-      public void setTotalPrice(double price) {
+
+    public void setTotalPrice(double price) {
         this.totalPrice = price;
     }
 
@@ -144,6 +144,4 @@ public class Orders implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
-    
-    
 }

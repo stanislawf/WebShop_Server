@@ -7,6 +7,7 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,6 +16,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  *
@@ -22,10 +24,15 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @NamedQueries({
-        @NamedQuery(name = "Bill.findBillByID", query = "SELECT bill FROM Bill bill WHERE Bill.id = :id"),
-     @NamedQuery(name = "Bill.findBillByAccountOwner", query = "SELECT bill FROM Bill bill WHERE Bill.accountOwner = :accountOwner")
+   
+     @NamedQuery(name = "Bill.findBillByBillID", query = "SELECT bl FROM Bill bl WHERE bl.id = :id"),
+     @NamedQuery(name = "Bill.findBillByAccountOwner", query = "SELECT bl FROM Bill bl WHERE bl.accountOwner = :accountOwner"),
+     @NamedQuery(name = "Bill.findBillByAccountNumber", query = "SELECT bl FROM Bill bl WHERE bl.accountNumber = :accountNumber"),
 })
 public class Bill implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -34,17 +41,18 @@ public class Bill implements Serializable {
     private String accountOwner;
     
     @NotNull
-    private String accountNumber;
+    private Long accountNumber;
     
     @NotNull
-    private String bankCode;
+    private int bankCode;
     
     @NotNull
     private String bankName;
     
     
-    @OneToMany (targetEntity = Orders.class, mappedBy = "bill")
-    private List<Orders> orders;
+    @ElementCollection
+    @OneToMany (targetEntity = PurchaseOrder.class, mappedBy = "bill")
+    private List<PurchaseOrder> orders;
 
     public Long getId() {
         return id;
@@ -62,19 +70,19 @@ public class Bill implements Serializable {
         this.accountOwner = accountOwner;
     }
 
-    public String getAccountNumber() {
+    public Long getAccountNumber() {
         return accountNumber;
     }
 
-    public void setAccountNumber(String accountNumber) {
+    public void setAccountNumber(Long accountNumber) {
         this.accountNumber = accountNumber;
     }
 
-    public String getBankCode() {
+    public int getBankCode() {
         return bankCode;
     }
 
-    public void setBankCode(String bankCode) {
+    public void setBankCode(int bankCode) {
         this.bankCode = bankCode;
     }
 
@@ -86,12 +94,11 @@ public class Bill implements Serializable {
         this.bankName = bankName;
     }
 
-    public List<Orders> getOrders() {
+    public List<PurchaseOrder> getOrders() {
         return orders;
     }
 
-    public void setOrders(List<Orders> orders) {
+    public void setOrders(List<PurchaseOrder> orders) {
         this.orders = orders;
     }
-    
 }

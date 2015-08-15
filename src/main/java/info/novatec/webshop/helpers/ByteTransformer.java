@@ -8,6 +8,8 @@ package info.novatec.webshop.helpers;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,8 +22,8 @@ public abstract class ByteTransformer {
         
         try {
             result = Files.readAllBytes(f.toPath());
-        } catch (IOException e) {
-            System.out.println("An error occured during transforming the file to a byte array");
+        } catch (IOException exeption) {
+            Logger.getLogger(ByteTransformer.class.getName()).log(Level.SEVERE, "Check File Path", exeption);
         }
         return result;
     }

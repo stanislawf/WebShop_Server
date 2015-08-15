@@ -6,14 +6,15 @@
 package info.novatec.webshop.persistence;
 
 import info.novatec.webshop.entities.Account;
-import info.novatec.webshop.entities.Orders;
+import info.novatec.webshop.entities.PurchaseOrder;
+import java.util.List;
 
 /**
  *
  * @author sf
  */
 public interface OrderManager {
-       public Orders getOrderById(Long id);
+       public PurchaseOrder getOrderById(Long id);
        
-         public Orders getOrderByAccount(Account account);
+         public List<PurchaseOrder> getOrderByAccount(Account account);
 }

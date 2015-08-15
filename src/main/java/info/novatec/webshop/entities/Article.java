@@ -7,11 +7,15 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -24,13 +28,15 @@ import javax.validation.constraints.Size;
  * @author sf
  */
 @Entity
-@NamedQueries({ 
-  @NamedQuery(name = "Article.findAllArticles", query ="SELECT article FROM Article article"),
-   @NamedQuery(name="Article.findArticleByID", query ="SELECT article FROM Article article WHERE article.id = :id"),
-    @NamedQuery(name="Article.findArticleByName", query ="SELECT article FROM Article article WHERE article.name = :name")
+@NamedQueries({
+    @NamedQuery(name = "Article.findAllArticles", query = "SELECT art FROM Article art"),
+    @NamedQuery(name = "Article.findArticleByArticleID", query = "SELECT art FROM Article art WHERE art.id = :id"),
+    @NamedQuery(name = "Article.findArticleByArticleName", query = "SELECT art FROM Article art WHERE art.name = :name")
 
 })
 public class Article implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -38,25 +44,33 @@ public class Article implements Serializable {
 
     @NotNull
     private String name;
-    
+
     @NotNull
     @Size(max = 5000)
+    @Column(length = 5000)
     private String description;
-    
+
+
     private byte[] image;
- 
+
     @NotNull
     private double price;
-    
-    
-    @ManyToMany(targetEntity = Category.class, fetch = FetchType.LAZY)
+ 
+    @NotNull
+    @ManyToMany
+    @JoinTable(
+      name="article_category",
+      joinColumns={@JoinColumn(name="articleID", referencedColumnName="id")},
+      inverseJoinColumns={@JoinColumn(name="categoryID", referencedColumnName="id")})
     private List<Category> categories;
-    
-    
-    @OneToMany(targetEntity = OrderLine.class, mappedBy = "article")
+
+  
+    @ElementCollection
+    @OneToMany(cascade = CascadeType.ALL, targetEntity = OrderLine.class, mappedBy = "article")
     private List<OrderLine> orderLines;
 
-    public Article(){}
+    public Article() {
+    }
 
     public Article(String name, String description, double price, List<Category> categories) {
         this.name = name;
@@ -64,16 +78,14 @@ public class Article implements Serializable {
         this.price = price;
         this.categories = categories;
     }
-    
-    
-    
-  public List<OrderLine> getOrderLines() {
-    return orderLines;
-  }
 
-  public void setOrderLines(List<OrderLine> orderLines) {
-    this.orderLines = orderLines;
-  }
+    public List<OrderLine> getOrderLines() {
+        return orderLines;
+    }
+
+    public void setOrderLines(List<OrderLine> orderLines) {
+        this.orderLines = orderLines;
+    }
 
     public Long getId() {
         return id;
@@ -122,12 +134,4 @@ public class Article implements Serializable {
     public void setCategories(List<Category> categories) {
         this.categories = categories;
     }
-
-//    @Override
-//    public String toString() {
-//        return "Article{" + "id=" + id + ", name=" + name + ", description=" + description + ", image=" + image + ", price=" + price + ", categories=" + categories.get(0).getName() + ", orderLines=" + orderLines + '}';
-//    }
-    
-    
-    
 }

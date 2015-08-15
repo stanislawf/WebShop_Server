@@ -1,53 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-    <persistence-unit name="webshopPU" transaction-type="JTA">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <jta-data-source>java:/jdbc/webshopDS</jta-data-source>
-        <class>info.novatec.webshop.entities.Account</class>
-        <class>info.novatec.webshop.entities.Address</class>
-        <class>info.novatec.webshop.entities.Article</class>
-        <class>info.novatec.webshop.entities.Bill</class>
-        <class>info.novatec.webshop.entities.Category</class>
-        <class>info.novatec.webshop.entities.CreditCard</class>
-        <class>info.novatec.webshop.entities.Orders</class>
-        <class>info.novatec.webshop.entities.OrderLine</class>
-        <class>info.novatec.webshop.entities.Role</class>
-        <properties>
-            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/webshop"/>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-            <property name="hibernate.connection.username" value="postgres"/>
-            <property name="hibernate.connection.password" value="mondschein"/>
-            <property name="javax.persistence.lock.timeout" value="1000"/>
-            <property name="javax.persistence.query.timeout" value="1000"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
-        </properties>
-    </persistence-unit>
+  <persistence-unit name="webshopPU" transaction-type="JTA">
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <jta-data-source>java:/jdbc/webshopDS</jta-data-source>
+
+    <class>info.novatec.webshop.entities.AccountRole</class>
+    <class>info.novatec.webshop.entities.AccountUser</class>
+    <class>info.novatec.webshop.entities.Address</class>
+    <class>info.novatec.webshop.entities.Article</class>
+    <class>info.novatec.webshop.entities.Bill</class>
+    <class>info.novatec.webshop.entities.Category</class>
+    <class>info.novatec.webshop.entities.CreditCard</class>
+    <class>info.novatec.webshop.entities.Guest</class>
+    <class>info.novatec.webshop.entities.OrderLine</class>
+    <class>info.novatec.webshop.entities.PurchaseOrder</class>
+    
+    
+    <properties>
+      <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+      <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/webshop"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+      <property name="hibernate.connection.username" value="postgres"/>
+      <property name="hibernate.connection.password" value="mondschein"/>
+      <property name="javax.persistence.lock.timeout" value="1000"/>
+      <property name="javax.persistence.query.timeout" value="1000"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="hibernate.show_sql" value="true"/>
+      <property name="hibernate.format_sql" value="true"/>
+    </properties>
+  </persistence-unit>
   <persistence-unit name="test" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
-        <non-jta-data-source/>
-        <class>info.novatec.webshop.entities.Account</class>
-        <class>info.novatec.webshop.entities.Address</class>
-        <class>info.novatec.webshop.entities.Article</class>
-        <class>info.novatec.webshop.entities.Bill</class>
-        <class>info.novatec.webshop.entities.Category</class>
-        <class>info.novatec.webshop.entities.CreditCard</class>
-        <class>info.novatec.webshop.entities.Orders</class>
-        <class>info.novatec.webshop.entities.OrderLine</class>
-        <class>info.novatec.webshop.entities.Role</class>
-        <properties>
-            <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-            <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/webshop"/>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-            <property name="hibernate.connection.username" value="postgres"/>
-            <property name="hibernate.connection.password" value="mondschein"/>
-            <property name="javax.persistence.lock.timeout" value="1000"/>
-            <property name="javax.persistence.query.timeout" value="1000"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
-        </properties>
-    </persistence-unit>
+    <provider>org.hibernate.ejb.HibernatePersistence</provider>
+    <non-jta-data-source/>
+   
+    <class>info.novatec.webshop.entities.AccountRole</class>
+    <class>info.novatec.webshop.entities.AccountUser</class>
+    <class>info.novatec.webshop.entities.Address</class>
+    <class>info.novatec.webshop.entities.Article</class>
+    <class>info.novatec.webshop.entities.Bill</class>
+    <class>info.novatec.webshop.entities.Category</class>
+    <class>info.novatec.webshop.entities.CreditCard</class>
+    <class>info.novatec.webshop.entities.Guest</class>
+    <class>info.novatec.webshop.entities.OrderLine</class>
+    <class>info.novatec.webshop.entities.PurchaseOrder</class>
+    
+    <properties>
+      <property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+      <property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/webshop"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+      <property name="hibernate.connection.username" value="postgres"/>
+      <property name="hibernate.connection.password" value="mondschein"/>
+      <property name="javax.persistence.lock.timeout" value="1000"/>
+      <property name="javax.persistence.query.timeout" value="1000"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="hibernate.show_sql" value="true"/>
+      <property name="hibernate.format_sql" value="true"/>
+    </properties>
+  </persistence-unit>
 </persistence>

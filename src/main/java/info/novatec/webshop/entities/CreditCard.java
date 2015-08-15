@@ -6,15 +6,15 @@
 package info.novatec.webshop.entities;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import javax.persistence.ElementCollection;
 
 /**
  *
@@ -22,6 +22,9 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 public class CreditCard implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -30,15 +33,15 @@ public class CreditCard implements Serializable {
     private String owner;
     
     @NotNull
-    @Temporal(javax.persistence.TemporalType.DATE)
-    private Date expireDate;
+    private LocalDate expireDate;
     
     @NotNull
-    private String creditCardNumber;
+    private Long creditCardNumber;
     
-    
-    @OneToMany (targetEntity = Orders.class, mappedBy = "creditCard")
-    private List<Orders> orders;
+    @NotNull
+    @ElementCollection
+    @OneToMany (targetEntity = PurchaseOrder.class, mappedBy = "creditCard")
+    private List<PurchaseOrder> orders;
 
     public Long getId() {
         return id;
@@ -56,29 +59,27 @@ public class CreditCard implements Serializable {
         this.owner = owner;
     }
 
-    public Date getExpireDate() {
+    public LocalDate getExpireDate() {
         return expireDate;
     }
 
-    public void setExpireDate(Date expireDate) {
+    public void setExpireDate(LocalDate expireDate) {
         this.expireDate = expireDate;
     }
 
-    public String getCreditCardNumber() {
+    public Long getCreditCardNumber() {
         return creditCardNumber;
     }
 
-    public void setCreditCardNumber(String creditCardNumber) {
+    public void setCreditCardNumber(Long creditCardNumber) {
         this.creditCardNumber = creditCardNumber;
     }
 
-    public List<Orders> getOrders() {
+    public List<PurchaseOrder> getOrders() {
         return orders;
     }
 
-    public void setOrders(List<Orders> orders) {
+    public void setOrders(List<PurchaseOrder> orders) {
         this.orders = orders;
     }
-    
-    
 }

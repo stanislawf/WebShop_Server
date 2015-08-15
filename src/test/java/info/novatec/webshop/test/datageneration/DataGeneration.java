@@ -6,29 +6,31 @@
 package info.novatec.webshop.test.datageneration;
 
 import info.novatec.webshop.entities.Account;
+import info.novatec.webshop.entities.AccountRole;
+import info.novatec.webshop.entities.AccountUser;
 import info.novatec.webshop.entities.Address;
 import info.novatec.webshop.entities.Article;
 import info.novatec.webshop.entities.Bill;
 import info.novatec.webshop.entities.Category;
-import info.novatec.webshop.entities.CreditCard;
+import info.novatec.webshop.entities.Guest;
 import info.novatec.webshop.entities.OrderLine;
-import info.novatec.webshop.entities.Orders;
-import info.novatec.webshop.entities.Role;
+import info.novatec.webshop.entities.PurchaseOrder;
+import info.novatec.webshop.enums.RoleType;
 import info.novatec.webshop.helpers.LoadArticleProperties;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import info.novatec.webshop.helpers.PasswordEncryption;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
+import javax.validation.constraints.NotNull;
 import static org.hamcrest.CoreMatchers.is;
+import org.junit.Assert;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
@@ -39,189 +41,230 @@ import org.junit.Test;
  */
 public class DataGeneration {
 
-    //Als 1. AusfÃ¼hren
-//    @Test
-//    public void testCreateNecessaryData(){
-//        testCreateRole();
-//        testCreateCategories();
-//        testCreateArticles();
-//    }
-//    
-//     Als 2. AusfÃ¼hren
-//    @Test
-//    public void testCreateData() throws NoSuchAlgorithmException{
-//      testCreateAccountWithRole();
-//    }
-    
-//     Als 3. AusfÃ¼hren
-//    @Test
-//    public void testCreateData(){
-//      testCreateBills();
-//      testCreateOrders();
-//    }
-    
-//     Als 4. AusfÃ¼hren
-//    @Test
-//    public void testCreateData(){
-//        testCreateOrderLines();
-//    }
-    
-    
-    
-    
-    
-    
-    private void testCreateRole() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
+    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
+    private EntityManager em = emf.createEntityManager();
+
+    //--------AccountRoles---------//
+    @Test
+    public void testPersistAccountRole() {
+
         em.getTransaction().begin();
 
-        Role roleUser = new Role();
-        roleUser.setRoleType("User");
+        AccountRole roleUser = new AccountRole();
+        roleUser.setRoleType(RoleType.User);
 
-        Role roleAdmin = new Role();
-        roleAdmin.setRoleType("Admin");
+        AccountRole roleAdmin = new AccountRole();
+        roleAdmin.setRoleType(RoleType.Admin);
 
-        em.persist(roleUser);
-        em.persist(roleAdmin);
+        List<AccountUser> accountUsers = new ArrayList();
+        AccountUser accountUser = new AccountUser();
+        Address address = new Address();
+        List<Address> accountAddresses = new ArrayList();
+        accountAddresses.add(address);
+        accountUser.setAddresses(accountAddresses);
 
-        assertTrue(em.contains(roleAdmin));
-        assertTrue(em.contains(roleUser));
+        accountUsers.add(accountUser);
+
+        roleUser.setAccount(accountUsers);
+        roleAdmin.setAccount(accountUsers);
+
+        AccountRole userRole = findAccountRoleByRoleType(RoleType.User);
+        AccountRole adminRole = findAccountRoleByRoleType(RoleType.Admin);
+
+        if (userRole == null) {
+            em.persist(roleUser);
+            assertTrue("Database does not contain role use", em.contains(roleUser));
+        }
+        if (adminRole == null) {
+            em.persist(roleAdmin);
+            assertTrue("Database does not contain role admin", em.contains(roleAdmin));
+        }
 
         em.getTransaction().commit();
         em.close();
 
     }
 
-    private void testCreateAccountWithRole() throws NoSuchAlgorithmException {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
+    @Test
+    public void testIfAccountRoleExists() {
+
+        AccountRole userRole = findAccountRoleByRoleType(RoleType.User);
+        AccountRole adminRole = findAccountRoleByRoleType(RoleType.Admin);
+        if (userRole != null) {
+            Assert.assertEquals(userRole.getRoleType(), RoleType.User);
+        }
+        if (adminRole != null) {
+            Assert.assertEquals(adminRole.getRoleType(), RoleType.Admin);
+        }
+    }
+
+    //--------AccountUser---------//
+    @Test
+    public void testPersistAccountUser() {
+
+        AccountUser accountUser = new AccountUser();
+        accountUser.setFirstName("accountUserOnlyFirstName");
+        accountUser.setLastName("accountUserOnlyLastName");
+        accountUser.setPhoneNumber("0172/4561321");
+        accountUser.setEmail("accountUserOny@email.de");
+        accountUser.setPassword(PasswordEncryption.securePassword("password"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse("03-06-1991", formatter);
+        accountUser.setBirthday(birthDate);
+        accountUser.setIsActive(true);
+
+        List<AccountRole> accountRoles = new ArrayList();
+        AccountRole userRole = null;
+        accountRoles.add(userRole);
+        AccountRole adminRole = null;
+        accountRoles.add(adminRole);
+        accountUser.setRoles(accountRoles);
+
+        Address address = null;
+        List<Address> addresses = new ArrayList();
+        addresses.add(address);
+        accountUser.setAddresses(addresses);
+
+        AccountUser userAccount = findAccountByAccountUserEmail("accountUserOny@email.de");
 
         em.getTransaction().begin();
-//        Role role = (Role) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", "User").getSingleResult();
-
-        List<Role> accountRoles = new ArrayList();
-//        accountRoles.add(role);
-
-        Role roleAdmin = (Role) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", "Admin").getSingleResult();
-        accountRoles.add(roleAdmin);
-
-        Account account = new Account();
-        account.setFirstName("Stanislaw");
-        account.setLastName("Freund");
-        account.setPhoneNumber("0172/3607116");
-        account.setEmail("stas.2HG@gmx.net");
-        String password = "09876543210";
-        String md5Password = pwSec(password);
-        account.setPassword(md5Password);
-        String inputStr = "25-06-1987";
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        Date inputDate = null;
-        try {
-            inputDate = dateFormat.parse(inputStr);
-        } catch (ParseException ex) {
-            System.err.println("An error occured while creating the role and the account!");
-            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, ex);
+        if (userAccount == null) {
+            em.persist(accountUser);
+            assertTrue("Database does not contain this account", em.contains(accountUser));
         }
-        account.setBirthday(inputDate);
-        account.setIsActive(true);
-        account.setRoles(accountRoles);
+
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    @Test
+    public void testPersistAddress() {
+
+        Address existentAddress = findAddressByStreet("Teststrasse 12");
 
         Address address = new Address();
-        address.setFirstName(account.getFirstName());
-        address.setLastName(account.getLastName());
-        address.setStreet("TeststraÃŸe 12");
+        address.setStreet("Teststrasse 12");
+        address.setCity("Teststadt");
+        address.setZipCode("71364");
+        address.setCountry("Deutschland");
+        Account account = null;
+        List<Account> accountList = new ArrayList();
+        accountList.add(account);
+        address.setAccount(accountList);
+
+        em.getTransaction().begin();
+        if (existentAddress == null) {
+            em.persist(address);
+            assertTrue("Database does not contain this address", em.contains(address));
+        }
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    @Test
+    public void testPersistAccountUserWithAddressAndRole() {
+
+        AccountRole userRole = findAccountRoleByRoleType(RoleType.User);
+        AccountRole adminRole = findAccountRoleByRoleType(RoleType.Admin);
+
+        AccountUser accountUser = new AccountUser();
+
+        accountUser.setFirstName("accountUserWithAddAndRoleFirstName");
+        accountUser.setLastName("accountUserWithAddAndRoleLastName");
+        accountUser.setPhoneNumber("0172/4561321");
+        accountUser.setEmail("accountUserWithAddAndRole@email.de");
+        accountUser.setPassword(PasswordEncryption.securePassword("password"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate birthDate = LocalDate.parse("25-06-1987", formatter);
+        accountUser.setBirthday(birthDate);
+        accountUser.setIsActive(true);
+
+        List<AccountRole> accountRoles = new ArrayList();
+        accountRoles.add(userRole);
+        accountRoles.add(adminRole);
+        accountUser.setRoles(accountRoles);
+
+        Address address = new Address();
+        address.setStreet("Teststrasse 13");
         address.setCity("Winnenden");
         address.setZipCode("71364");
         address.setCountry("Deutschland");
-        address.setAccount(account);
 
         List<Address> addresses = new ArrayList();
         addresses.add(address);
 
-        account.setHomeAddress(addresses);
-
-        em.persist(account);
-        em.persist(address);
-        assertTrue(em.contains(account));
-        assertTrue(em.contains(address));
-
-        em.getTransaction().commit();
-        em.close();
-    }
-    
-    public static String pwSec(String vPass) throws NoSuchAlgorithmException{
-        /* Berechnung */
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        md5.update(vPass.getBytes());
-        byte[] result = md5.digest();
- 
-        /* Ausgabe */
-        StringBuffer hexString = new StringBuffer();
-        for (int i=0; i<result.length; i++) {
-            hexString.append(Integer.toHexString(0xFF & result[i]));
-        }
-        return hexString.toString();
-    }
-
-    private void testCreateCategories() {
-        //---------------------------------------------
-        //              Categories
-        //---------------------------------------------
-
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
+        accountUser.setAddresses(addresses);
+        List<Account> accounts = new ArrayList();
+        accounts.add(accountUser);
+        address.setAccount(accounts);
 
         em.getTransaction().begin();
 
+        AccountUser userAccount = findAccountByAccountUserEmail("accountUserWithAddAndRole@email.de");
+
+        if (userAccount == null) {
+            em.persist(accountUser);
+            em.persist(address);
+            assertTrue("Database does not contain this account", em.contains(accountUser));
+            assertTrue("Database does not contain this address", em.contains(address));
+        }
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    //--------Guest---------//
+    @Test
+    public void testPersistGuest() {
+        Guest guest = new Guest();
+        guest.setEmail("guest@email.de");
+        guest.setFirstName("GuestFirstName");
+        guest.setLastName("GuestLastName");
+
+        em.getTransaction().begin();
+        em.persist(guest);
+        assertTrue("Database does not contain this guest", em.contains(guest));
+        em.getTransaction().commit();
+        em.close();
+    }
+
+    @Test
+    public void testPersistCategoriesAndArticles() {
+        em.getTransaction().begin();
         //Smartphones
         Category categorySmartphone = new Category();
         categorySmartphone.setName("Smartphones");
 
         em.persist(categorySmartphone);
-        assertTrue(em.contains(categorySmartphone));
+        assertTrue("Database does not contain this category" + categorySmartphone.getName(), em.contains(categorySmartphone));
 
         //Notebooks
         Category categoryNotebooks = new Category();
         categoryNotebooks.setName("Notebooks");
 
         em.persist(categoryNotebooks);
-        assertTrue(em.contains(categoryNotebooks));
+        assertTrue("Database does not contain this category" + categoryNotebooks.getName(), em.contains(categoryNotebooks));
 
         //Cameras
         Category categoryCameras = new Category();
         categoryCameras.setName("Cameras");
 
         em.persist(categoryCameras);
-        assertTrue(em.contains(categoryCameras));
+        assertTrue("Database does not contain this category" + categoryCameras.getName(), em.contains(categoryCameras));
 
         //Television
         Category categoryTelevision = new Category();
         categoryTelevision.setName("Television");
 
         em.persist(categoryTelevision);
-        assertTrue(em.contains(categoryTelevision));
+        assertTrue("Database does not contain this category" + categoryTelevision.getName(), em.contains(categoryTelevision));
 
-        em.getTransaction().commit();
-        em.close();
-
-    }
-
-    private void testCreateArticles() {
-        //---------------------------------------------
-        //              Articles
-        //---------------------------------------------
-
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
-
-        em.getTransaction().begin();
-
-        List<Article> articles = LoadArticleProperties.loadArticlePropertiesFromSystem();
+        LoadArticleProperties lAP = new LoadArticleProperties();
+        List<Article> articles = lAP.loadArticlePropertiesFromSystem();
         assertThat(articles.size(), is(21));
         Category category;
+
         for (Article article : articles) {
-            category = (Category) em.createNamedQuery("Category.findCategoryByName").setParameter("name", article.getCategories().get(0).getName()).getSingleResult();
+            category = (Category) em.createNamedQuery("Category.findCategoryByCategoryName").setParameter("name", article.getCategories().get(0).getName()).getResultList().get(0);
 
             List<Article> categoryArticles = new ArrayList();
             List<Category> articlesCategory = new ArrayList();
@@ -234,76 +277,68 @@ public class DataGeneration {
             article.setCategories(articlesCategory);
             em.persist(article);
             assertTrue(em.contains(article));
-            System.out.println("Commited 3");
-
         }
         em.getTransaction().commit();
         em.close();
     }
 
-    private void testCreateBills() {
-
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
-
-        em.getTransaction().begin();
-        Account account = (Account) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", "stas.2HG@gmx.net").getSingleResult();
+    @Test
+    public void testCreateBills() {
+        Bill existentBill = findBillByAccountOwner("Vorname Nachname");
 
         Bill bill = new Bill();
-        bill.setAccountNumber("87654321");
-        bill.setAccountOwner(account.getFirstName() + " " + account.getLastName());
-        bill.setBankCode("6206543031");
-        bill.setBankName("Bank B");
-        em.persist(bill);
-        assertTrue(em.contains(bill));
+        bill.setAccountNumber(new Long("01234567894"));
+        bill.setAccountOwner("Vorname Nachname");
+        bill.setBankCode(12345678);
+        bill.setBankName("Bank");
+
+        em.getTransaction().begin();
+        if (existentBill == null) {
+            em.persist(bill);
+            assertTrue(em.contains(bill));
+        }
 
         em.getTransaction().commit();
         em.close();
     }
 
-    private void testCreateOrders() {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
+    @Test
+    public void testCreateOrders() {
 
         em.getTransaction().begin();
 
-        Orders order = new Orders();
+        PurchaseOrder order = new PurchaseOrder();
 
-        String inputStr2 = "25-06-1987";
-        DateFormat dateFormat2 = new SimpleDateFormat("dd-MM-yyyy");
-        Date orderDate = null;
-        try {
-            orderDate = dateFormat2.parse(inputStr2);
-        } catch (ParseException ex) {
-            System.err.println("An error occured while creating the role and the account!");
-            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate orderDate = LocalDate.parse("12-08-2015", formatter);
         order.setOrderDate(orderDate);
-        Account account = (Account) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", "stas.2HG@gmx.net").getSingleResult();
-        Address address = (Address) em.createNamedQuery("Address.findAddressByAccountID").setParameter("account", account).getSingleResult();
-        List<Orders> accountOrders = new ArrayList();
-        accountOrders.add(order);
-        account.setOrders(accountOrders);
-        List<Orders> addressOrders = new ArrayList();
-        addressOrders.add(order);
-        address.setDeliveryOrder(addressOrders);
-        address.setBillingOrder(accountOrders);
-        em.merge(account);
-        em.merge(address);
-
+        order.setTotalPrice(0.0);
+        Account account = findAccountByAccountUserEmail("accountUserWithAddAndRole@email.de");
+        Assert.assertNotNull(account);
         order.setAccount(account);
+        OrderLine orderLine = null;
+        List<OrderLine> orderLines = new ArrayList();
+        orderLines.add(orderLine);
+        order.setOrderLines(orderLines);
+        Address address = new Address();
+        address.setStreet("TeststraÃƒÅ¸e 123");
+        address.setCity("Teststadt");
+        address.setZipCode("12312");
+        address.setCountry("Deutschland");
+        address.setIshomeAddress(false);
+        List<Account> accounts = new ArrayList();
+        accounts.add(account);
+        address.setAccount(accounts);
+
         order.setDeliveryAddress(address);
         order.setBillingAddress(address);
-
-        Bill bill = (Bill) em.createNamedQuery("Bill.findBillByAccountOwner").setParameter("accountOwner", (account.getFirstName() + " " + account.getLastName())).getSingleResult();
-
-        List<Orders> billOrders = new ArrayList();
-        billOrders.add(order);
-        bill.setOrders(billOrders);
+        Bill bill = new Bill();
+        bill.setAccountOwner(account.getFirstName() + " " + account.getLastName());
+        bill.setAccountNumber(Long.parseLong("1234567890"));
+        bill.setBankCode(12345678);
+        bill.setBankName("Bank A");
         order.setBill(bill);
 
-        order.setTotalPrice(0.0);
         em.persist(order);
         assertTrue(em.contains(order));
 
@@ -312,41 +347,107 @@ public class DataGeneration {
 
     }
 
-    private void testCreateOrderLines() {
-
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("test");
-        EntityManager em = emf.createEntityManager();
-
+    @Test
+    public void testCreateOrderLines() {
         em.getTransaction().begin();
 
         OrderLine orderLine = new OrderLine();
-        Article article = (Article) em.createNamedQuery("Article.findArticleByName").setParameter("name", "Apple iPhone 6").getSingleResult();
+        Article article = getArticleByName("Apple iPhone 6");
+        Assert.assertNotNull(article);
         List<OrderLine> orderLinesForArticles = new ArrayList();
         orderLinesForArticles.add(orderLine);
         article.setOrderLines(orderLinesForArticles);
         em.merge(article);
-
         orderLine.setArticle(article);
-
-        Account account = (Account) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", "stas.2HG@gmx.net").getSingleResult();
-        Orders order = (Orders) em.createNamedQuery("Orders.findOrdersByAccount").setParameter("account", account).getSingleResult();
-
-        orderLine.setOrder(order);
-        orderLine.setQuantity(Byte.valueOf("3"));
-        em.persist(orderLine);
-        assertTrue(em.contains(orderLine));
-
-        List<OrderLine> orderLines = new ArrayList();
-        orderLines.add(orderLine);
-        order.setOrderLines(orderLines);
-        order.setTotalPrice(orderLines);
-        em.merge(order);
-
-        em.persist(orderLine);
-        assertTrue(em.contains(orderLine));
-
-        em.getTransaction().commit();
-        em.close();
+//
+//        Account account = (Account) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", "accountUserWithAddAndRole@email.de").getResultList().get(0);
+//        PurchaseOrder order = (PurchaseOrder) em.createNamedQuery("Orders.findOrdersByAccount").setParameter("account", account).getResultList().get(0);
+//
+//        orderLine.setOrder(order);
+//        orderLine.setQuantity(3);
+//        em.persist(orderLine);
+//        assertTrue(em.contains(orderLine));
+//
+//        List<OrderLine> orderLines = new ArrayList();
+//        orderLines.add(orderLine);
+//        order.setOrderLines(orderLines);
+//        order.setTotalPrice(orderLines);
+//        em.merge(order);
+//
+//        em.persist(orderLine);
+//        assertTrue(em.contains(orderLine));
+//
+//        em.getTransaction().commit();
+//        em.close();
     }
 
+    private AccountRole findAccountRoleByRoleType(RoleType roleType) {
+        AccountRole role = null;
+        try {
+            role = (AccountRole) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", roleType).getSingleResult();
+        } catch (NoResultException ex) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return role;
+    }
+
+    private AccountUser findAccountByAccountUserEmail(String accountUserOnlyEmail) {
+        AccountUser user = null;
+        try {
+            user = (AccountUser) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", accountUserOnlyEmail).getSingleResult();
+        } catch (NoResultException ex) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return user;
+    }
+
+    private Address findAddressByStreet(String street) {
+        Address address = null;
+        try {
+            address = (Address) em.createNamedQuery("Address.findAddressByStreet").setParameter("street", street).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return address;
+    }
+
+    private Bill findBillByAccountOwner(String accountOwner) {
+        Bill bill = null;
+        try {
+            bill = (Bill) em.createNamedQuery("Bill.findBillByAccountOwner").setParameter("accountOwner", accountOwner).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return bill;
+    }
+
+    private Address getAddressById(Long id) {
+        Address address = null;
+        try {
+            address = (Address) em.createNamedQuery("Address.findAddressByAddressID").setParameter("id", id).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return address;
+    }
+
+    private List<Address> getAddressByAccounts(@NotNull List<Account> accounts) {
+        List<Address> addresses = null;
+        try {
+            addresses = (List<Address>) em.createNamedQuery("Address.findAddressByAccount").setParameter("accounts", accounts).getResultList();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return addresses;
+    }
+    
+     private Article getArticleByName(String name) {
+        Article article = null;
+        try {
+            article = (Article) em.createNamedQuery("Article.findArticleByArticleName").setParameter("name", name).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return article;
+    }
 }

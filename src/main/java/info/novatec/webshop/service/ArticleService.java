@@ -8,10 +8,13 @@ package info.novatec.webshop.service;
 import info.novatec.webshop.entities.Article;
 import info.novatec.webshop.persistence.ArticleManager;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
@@ -27,12 +30,24 @@ public class ArticleService implements ArticleManager {
 
     @Override
     public List<Article> getAllArticles() {
-        return (List<Article>) em.createNamedQuery("Article.findAllArticles").getResultList();
+        List<Article> articleList = null;
+        try {
+            articleList = (List<Article>) em.createNamedQuery("Article.findAllArticles").getResultList();
+        }  catch (NoResultException exeption) {
+            Logger.getLogger(ArticleService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return articleList;
     }
 
     @Override
     public Article getArticleById(Long id) {
-        return (Article) em.createNamedQuery("Article.findArticleByID").setParameter("id", id).getSingleResult();
+        Article article = null;
+        try {
+            article = (Article) em.createNamedQuery("Article.findArticleByArticleID").setParameter("id", id).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(ArticleService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return article;
     }
 
     @Override
@@ -43,7 +58,12 @@ public class ArticleService implements ArticleManager {
 
     @Override
     public Article getArticleByName(String name) {
-         return (Article) em.createNamedQuery("Article.findArticleByName").setParameter("name", name).getSingleResult();
-  }
-
+        Article article = null;
+        try {
+            article = (Article) em.createNamedQuery("Article.findArticleByArticleName").setParameter("name", name).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(ArticleService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return article;
+    }
 }

@@ -7,22 +7,31 @@ package info.novatec.webshop.service;
 
 import info.novatec.webshop.entities.OrderLine;
 import info.novatec.webshop.persistence.OrderLineManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
 /**
  *
  * @author sf
  */
-public class OrderLineService implements OrderLineManager{
-     @PersistenceContext(unitName = "webshopPU")
+public class OrderLineService implements OrderLineManager {
+
+    @PersistenceContext(unitName = "webshopPU")
     private EntityManager em;
-    
-  
 
     @Override
     public OrderLine getOrderLineById(Long id) {
-          return (OrderLine) em.createNamedQuery("Orderline.findOrderlineByID").setParameter("id", id).getSingleResult();
-   }
+        OrderLine orderLine = null;
+        try {
+            orderLine = (OrderLine) em.createNamedQuery("Orderline.findOrderlineByOrderLineID").setParameter("id", id).getSingleResult();
+
+        }catch (NoResultException exeption) {
+            Logger.getLogger(OrderLineService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return orderLine;
+    }
 
 }

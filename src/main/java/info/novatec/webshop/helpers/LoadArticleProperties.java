@@ -21,24 +21,23 @@ import java.util.logging.Logger;
  *
  * @author sf
  */
-public abstract class LoadArticleProperties {
+public class LoadArticleProperties {
 
-    private static final String path = "C:\\Users\\sf\\Documents\\NetBeansProjects\\Webshop\\Webshop\\WebShop_Server\\src\\main\\resources\\articleData";
-                                  
-    public static List<Article> loadArticlePropertiesFromSystem() {
+    private final String SERVER_PATH = getClass().getResource("/articleData").getFile();
+
+    
+    
+    public List<Article> loadArticlePropertiesFromSystem() {
         return loadArticles();
     }
 
-    private static List<Article> loadArticles() {
+    private List<Article> loadArticles() {
         List<Article> articles = new ArrayList<>();
-        File file = new File(path);
-        System.out.println(path);
+        File file = new File(SERVER_PATH);   
         String[] directoryArray = file.list();
-        System.out.println(directoryArray.length);
         int index = 0;
-        
         while (index < directoryArray.length) {
-            checkSubPath(path + File.separator + directoryArray[index], articles);
+            checkSubPath(SERVER_PATH + File.separator + directoryArray[index], articles);
             index++;
         }
         return articles;
@@ -50,32 +49,26 @@ public abstract class LoadArticleProperties {
         Properties prop = new Properties();
         Article article = new Article();
         for (String extension : directoryArray) {
-            
-            System.out.println("------------");
             String absolutePath = path + File.separator + extension;
-            System.out.println(absolutePath);
-            if ((extension).endsWith(".properties")) {
-                System.out.println("True. It´s there");
-
+            if (extension.endsWith(".properties")) {
                 try {
                     prop.load(new FileInputStream(absolutePath));
-                } catch (IOException ex) {
-                    Logger.getLogger(LoadArticleProperties.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException exception) {
+                    Logger.getLogger(LoadArticleProperties.class.getName()).log(Level.SEVERE, null, exception);
                 }
                 List<Category> categories = getArticleCategories(prop.getProperty("Categories"));
                 article 
                         = new Article(prop.getProperty("Name"), prop.getProperty("Description"), Double.valueOf(prop.getProperty("Price")) , categories);
                 articles.add(article);
                
-            } else if ((extension).endsWith(".jpg")) {
+            } else if (extension.endsWith(".jpg")) {
              //  article.setImage(ByteTransformer.getBytesOfFile(absolutePath));
-                System.out.println("Image Found");
-                //article.toString();
+//                Logger.getLogger(LoadArticleProperties.class.getName(), "Picture found");
+                article.toString();
             } else {
                 checkSubPath(absolutePath, articles);
             }
         }
-        System.out.println("Articles Size " + articles.size());
         return articles;
     }
 
@@ -84,11 +77,8 @@ public abstract class LoadArticleProperties {
         List<Category> categories = new ArrayList();
         Category cat;
         for (String category : categoryList) {
-            System.out.println("I´m Here " + category);
             cat = new Category(category);
             categories.add(cat);
-            System.out.println("--asdfasf---");
-            System.out.println(cat.getName());
         }
         return categories;
     }
