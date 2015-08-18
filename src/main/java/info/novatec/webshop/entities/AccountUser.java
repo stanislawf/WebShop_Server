@@ -9,14 +9,10 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -24,10 +20,7 @@ import javax.validation.constraints.NotNull;
  * @author sf
  */
 
-@NamedQueries({
-    @NamedQuery(name = "Account.findAccountByID", query = "SELECT acc FROM AccountUser acc WHERE acc.id = :id"),
-    @NamedQuery(name = "Account.findAccountByEmail", query = "SELECT acc FROM AccountUser acc WHERE acc.email = :email")
-})
+
 @Entity
 public class AccountUser extends Account implements Serializable{
     
@@ -46,7 +39,7 @@ public class AccountUser extends Account implements Serializable{
     private boolean isActive;
     
     @NotNull
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
       name="account_address",
       joinColumns={@JoinColumn(name="accountID", referencedColumnName="id")},

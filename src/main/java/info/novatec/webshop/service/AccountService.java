@@ -8,6 +8,7 @@ package info.novatec.webshop.service;
 import info.novatec.webshop.entities.Account;
 import info.novatec.webshop.entities.Address;
 import info.novatec.webshop.entities.AccountRole;
+import info.novatec.webshop.enums.RoleType;
 import info.novatec.webshop.persistence.AccountManager;
 import java.util.List;
 import java.util.logging.Level;
@@ -74,7 +75,7 @@ public class AccountService implements AccountManager {
         }
         return address;
     }
-    
+
     @Override
     public Address getAddressByStreet(String street) {
         Address address = null;
@@ -85,7 +86,7 @@ public class AccountService implements AccountManager {
         }
         return address;
     }
-    
+
     @Override
     public Address getAddressByHomeAddress(boolean flag, List<Account> accounts) {
         Address address = null;
@@ -98,14 +99,15 @@ public class AccountService implements AccountManager {
     }
 
     @Override
-    public AccountRole getRoleByRoleType(String role) {
-        AccountRole roles = null;
+    public AccountRole getRoleByRoleType(RoleType role) {
+
+        AccountRole accountRole = null;
         try {
-            roles = (AccountRole) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", role).getSingleResult();
-        } catch (NoResultException exeption) {
-            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
+            accountRole = (AccountRole) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", role).getSingleResult();
+        } catch (NoResultException ex) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return roles;
+        return accountRole;
     }
 
     @Override
@@ -118,5 +120,16 @@ public class AccountService implements AccountManager {
         }
         return addresses;
     }
-
+    
+    @Override
+    public Address getAddressByAccountAndHomeAddress(List<Account> accounts) {
+        Address addresses = null;
+        try {
+            addresses = (Address) em.createNamedQuery("Address.findAddressByAccountAndHomeAddress").setParameter("accounts", accounts).setParameter("ishomeAddress", true).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return addresses;
+    }
+    
 }

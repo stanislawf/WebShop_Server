@@ -8,6 +8,7 @@ package info.novatec.webshop.persistence;
 import info.novatec.webshop.entities.Account;
 import info.novatec.webshop.entities.Address;
 import info.novatec.webshop.entities.AccountRole;
+import info.novatec.webshop.enums.RoleType;
 import java.util.List;
 
 /**
@@ -32,6 +33,8 @@ public interface AccountManager {
 
   public boolean createAddress(Address address);
 
-  public AccountRole getRoleByRoleType(String role);
+  public AccountRole getRoleByRoleType(RoleType role);
+  
+   public Address getAddressByAccountAndHomeAddress(List<Account> accounts);
   
 }

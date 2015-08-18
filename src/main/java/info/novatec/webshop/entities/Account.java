@@ -15,6 +15,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
@@ -23,6 +25,10 @@ import javax.validation.constraints.NotNull;
  * @author sf
  */
 @Entity
+@NamedQueries({
+    @NamedQuery(name = "Account.findAccountByID", query = "SELECT acc FROM Account acc WHERE acc.id = :id"),
+    @NamedQuery(name = "Account.findAccountByEmail", query = "SELECT acc FROM Account acc WHERE acc.email = :email")
+})
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class Account implements Serializable {
 

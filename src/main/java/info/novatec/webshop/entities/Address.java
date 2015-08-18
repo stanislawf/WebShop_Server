@@ -7,6 +7,7 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,6 +27,7 @@ import javax.validation.constraints.NotNull;
 @NamedQueries({
         @NamedQuery(name = "Address.findAddressByAddressID", query = "SELECT addr FROM Address addr WHERE addr.id = :id"),
         @NamedQuery(name = "Address.findAddressByAccount", query = "SELECT addr FROM Address addr WHERE :accounts member of addr.accounts"),
+        @NamedQuery(name = "Address.findAddressByAccountAndHomeAddress", query = "SELECT addr FROM Address addr WHERE :accounts member of addr.accounts AND addr.ishomeAddress = :ishomeAddress"),
           @NamedQuery(name = "Address.findAddressByStreet", query = "SELECT addr FROM Address addr WHERE addr.street = :street"),
             @NamedQuery(name = "Address.findAddressByHomeAddress", query = "SELECT addr FROM Address addr WHERE addr.ishomeAddress = :flag AND addr.accounts = :accounts"),
 })

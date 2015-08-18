@@ -12,6 +12,7 @@ import info.novatec.webshop.entities.Address;
 import info.novatec.webshop.entities.Article;
 import info.novatec.webshop.entities.Bill;
 import info.novatec.webshop.entities.Category;
+import info.novatec.webshop.entities.Guest;
 import info.novatec.webshop.entities.OrderLine;
 import info.novatec.webshop.entities.PurchaseOrder;
 import info.novatec.webshop.enums.RoleType;
@@ -21,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
@@ -50,6 +52,10 @@ public class DataGeneration2 {
     private Category category;
     private Article article;
     private PurchaseOrder order;
+    private Random random;
+    private String userEmail;
+    private String userStreet;
+    private String guestEmail;
 
     public DataGeneration2() {
     }
@@ -65,20 +71,28 @@ public class DataGeneration2 {
         category = new Category();
         article = new Article();
         order = new PurchaseOrder();
+        random = new Random();
         em.getTransaction().begin();
+        testPersistAccountRole();
+        testPersistCategoriesAndArticles();
+    }
+
+    @Test
+    public void persistAccountUserWithOrder() {
+        testPersistAccountUserWithAddressAndRole("einstein", true);
+        testCreateOrder(userEmail, userStreet);
+    }
+
+    @Test
+    public void persistGuestUserWithOrder() {
+        testPersistGuest("hobit");
+        testCreateOrderForGuest(guestEmail, "hobit");
+
     }
 
     @After
     public void tearDown() {
         em.close();
-    }
-
-    @Test
-    public void persistAccountUserWithOrder() {
-        testPersistAccountRole();
-        testPersistCategoriesAndArticles();
-        testPersistAccountUserWithAddressAndRole();
-        testCreateOrder();
     }
 
     private void testPersistAccountRole() {
@@ -110,73 +124,6 @@ public class DataGeneration2 {
 
         em.getTransaction().commit();
 
-    }
-
-    private AccountRole findAccountRoleByRoleType(RoleType roleType) {
-        AccountRole role = null;
-        try {
-            role = (AccountRole) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", roleType).getSingleResult();
-        } catch (NoResultException ex) {
-            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return role;
-    }
-
-    private void testPersistAccountUserWithAddressAndRole() {
-
-        AccountRole userRole = findAccountRoleByRoleType(RoleType.User);
-        AccountRole adminRole = findAccountRoleByRoleType(RoleType.Admin);
-
-        accountUser.setFirstName("accountUserWithAddAndRoleFirstName");
-        accountUser.setLastName("accountUserWithAddAndRoleLastName");
-        accountUser.setPhoneNumber("0172/4561321");
-        accountUser.setEmail("accountUserWithAddAndRole@email.de");
-        accountUser.setPassword(PasswordEncryption.securePassword("password"));
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        LocalDate birthDate = LocalDate.parse("25-06-1987", formatter);
-        accountUser.setBirthday(birthDate);
-        accountUser.setIsActive(true);
-
-        List<AccountRole> accountRoles = new ArrayList();
-        accountRoles.add(userRole);
-        accountRoles.add(adminRole);
-        accountUser.setRoles(accountRoles);
-
-        address.setStreet("Teststrasse 13");
-        address.setCity("Winnenden");
-        address.setZipCode("71364");
-        address.setCountry("Deutschland");
-
-        List<Address> addresses = new ArrayList();
-        addresses.add(address);
-
-        accountUser.setAddresses(addresses);
-        List<Account> accounts = new ArrayList();
-        accounts.add(accountUser);
-        address.setAccount(accounts);
-
-        em.getTransaction().begin();
-
-        AccountUser userAccount = findAccountByAccountUserEmail("accountUserWithAddAndRole@email.de");
-
-        if (userAccount == null) {
-            em.persist(accountUser);
-            em.persist(address);
-            assertTrue("Database does not contain this account", em.contains(accountUser));
-            assertTrue("Database does not contain this address", em.contains(address));
-        }
-        em.getTransaction().commit();
-
-    }
-
-    private AccountUser findAccountByAccountUserEmail(String accountUserOnlyEmail) {
-        AccountUser user = null;
-        try {
-            user = (AccountUser) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", accountUserOnlyEmail).getSingleResult();
-        } catch (NoResultException ex) {
-            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return user;
     }
 
     private void testPersistCategoriesAndArticles() {
@@ -249,40 +196,152 @@ public class DataGeneration2 {
         em.getTransaction().commit();
     }
 
-    private Category getCategoryByNAme(String name) {
-        Category category = null;
-        try {
-            category = (Category) em.createNamedQuery("Category.findCategoryByCategoryName").setParameter("name", name).getSingleResult();
-        } catch (NoResultException exeption) {
-            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
-        }
-        return category;
-    }
+    private void testPersistAccountUserWithAddressAndRole(String user, boolean admin) {
 
-    private Article getArticleByName(String name) {
-        Article article = null;
-        try {
-            article = (Article) em.createNamedQuery("Article.findArticleByArticleName").setParameter("name", name).getSingleResult();
-        } catch (NoResultException exeption) {
-            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
-        }
-        return article;
-    }
+        AccountRole userRole = findAccountRoleByRoleType(RoleType.User);
+        AccountRole adminRole = findAccountRoleByRoleType(RoleType.Admin);
 
-    private void testCreateOrder() {
+        accountUser.setFirstName(user + "FirstName");
+        accountUser.setLastName(user + "LastName");
+
+        accountUser.setPhoneNumber("0172/4561321");
+        accountUser.setEmail(user + "@email.de");
+        accountUser.setPassword(PasswordEncryption.securePassword(user));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-M-yyyy");
+        String s = generateRandomBirthDate();
+        LocalDate birthDate = LocalDate.parse(s, formatter);
+        accountUser.setBirthday(birthDate);
+        accountUser.setIsActive(true);
+
+        List<AccountRole> accountRoles = new ArrayList();
+        if (admin) {
+            accountRoles.add(adminRole);
+        }
+        accountRoles.add(userRole);
+
+        accountUser.setRoles(accountRoles);
+
+        address.setStreet(user + "Teststrasse 13");
+        address.setCity(user + "Stadt");
+        address.setZipCode(String.valueOf(generateRandomInteger(01000, 95001)));
+        address.setCountry("Deutschland");
+
+        List<Address> addresses = new ArrayList();
+        addresses.add(address);
+
+        accountUser.setAddresses(addresses);
+        List<Account> accounts = new ArrayList();
+        accounts.add(accountUser);
+        address.setAccount(accounts);
 
         em.getTransaction().begin();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        LocalDate orderDate = LocalDate.parse("12-08-2015", formatter);
+        AccountUser userAccount = (AccountUser) findAccountByAccountUserEmail(user + "@email.de");
+
+        if (userAccount == null) {
+            em.persist(accountUser);
+            em.persist(address);
+            assertTrue("Database does not contain this account", em.contains(accountUser));
+            assertTrue("Database does not contain this address", em.contains(address));
+        }
+        em.getTransaction().commit();
+        userEmail = accountUser.getEmail();
+        userStreet = address.getStreet();
+    }
+
+    private void testPersistGuest(String guestAdd) {
+
+        Guest guest = new Guest();
+        guest.setEmail(guestAdd + "@email.de");
+        guest.setFirstName(guestAdd + "FirstName");
+        guest.setLastName(guestAdd + "LastName");
+
+        em.getTransaction().begin();
+        em.persist(guest);
+        assertTrue("Database does not contain this guest", em.contains(guest));
+        em.getTransaction().commit();
+        guestEmail = guest.getEmail();
+    }
+
+    private void testCreateOrderForGuest(String accountEmail, String guestAddon) {
+        em.getTransaction().begin();
+        String date;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-M-yyyy");
+        if (LocalDate.now().getMonthValue() < 10) {
+            date = generateRandomInteger(10, 29) + "-0" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().getYear();
+        } else {
+            date = generateRandomInteger(10, 29) + "-" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().getYear();
+        }
+
+        LocalDate orderDate = LocalDate.parse(date, formatter);
         order.setOrderDate(orderDate);
         order.setTotalPrice(0.0);
 
-        Account account = findAccountByAccountUserEmail("accountUserWithAddAndRole@email.de");
+        Guest guest = (Guest) findAccountByAccountUserEmail(accountEmail);
+        Assert.assertNotNull(guest);
+        order.setAccount(guest);
+
+        Address guestAddress = new Address();
+
+        guestAddress.setStreet(guestAddon + "Teststrasse 13");
+        guestAddress.setCity(guestAddon + "Stadt");
+        guestAddress.setZipCode(String.valueOf(generateRandomInteger(01000, 95001)));
+        guestAddress.setCountry("Deutschland");
+
+        List<Account> guestUsers = new ArrayList();
+        guestUsers.add(accountUser);
+        guestAddress.setAccount(guestUsers);
+
+        order.setDeliveryAddress(guestAddress);
+        order.setBillingAddress(guestAddress);
+
+        Article article = null;
+        while (article == null) {
+            article = getArticleById(new Long(generateRandomInteger(7, 28)));
+        }
+        OrderLine orderline = new OrderLine();
+        List<OrderLine> orderLines = new ArrayList();
+        orderLines.add(orderline);
+
+        article.setOrderLines(orderLines);
+        orderline.setArticle(article);
+        orderline.setOrder(order);
+        orderline.setQuantity(2);
+        order.setOrderLines(orderLines);
+
+        Bill bill = new Bill();
+        bill.setAccountOwner(guest.getFirstName() + " " + guest.getLastName());
+        bill.setAccountNumber(Long.valueOf(String.valueOf(generateRandomInteger(111111111, 999999999))));
+        bill.setBankCode(generateRandomInteger(11111111, 77777777));
+        bill.setBankName("Bank B");
+
+        order.setBill(bill);
+
+        em.persist(order);
+        assertTrue(em.contains(order));
+
+        em.getTransaction().commit();
+    }
+
+    private void testCreateOrder(String accountEmail, String street) {
+        em.getTransaction().begin();
+        String date;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-M-yyyy");
+        if (LocalDate.now().getMonthValue() < 10) {
+            date = generateRandomInteger(10, 29) + "-0" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().getYear();
+        } else {
+            date = generateRandomInteger(10, 29) + "-" + LocalDate.now().getMonthValue() + "-" + LocalDate.now().getYear();
+        }
+
+        LocalDate orderDate = LocalDate.parse(date, formatter);
+        order.setOrderDate(orderDate);
+        order.setTotalPrice(0.0);
+
+        Account account = findAccountByAccountUserEmail(accountEmail);
         Assert.assertNotNull(account);
         order.setAccount(account);
 
-        Address address = findAddressByStreet("Teststrasse 13");
+        Address address = findAddressByStreet(street);
 
         order.setDeliveryAddress(address);
         order.setBillingAddress(address);
@@ -297,19 +356,59 @@ public class DataGeneration2 {
         orderline.setOrder(order);
         orderline.setQuantity(2);
         order.setOrderLines(orderLines);
-        
+
         Bill bill = new Bill();
         bill.setAccountOwner(account.getFirstName() + " " + account.getLastName());
-        bill.setAccountNumber(Long.parseLong("1234567890"));
-        bill.setBankCode(12345678);
+        bill.setAccountNumber(Long.valueOf(String.valueOf(generateRandomInteger(111111111, 999999999))));
+        bill.setBankCode(generateRandomInteger(11111111, 77777777));
         bill.setBankName("Bank A");
 
         order.setBill(bill);
-        
+
         em.persist(order);
         assertTrue(em.contains(order));
 
         em.getTransaction().commit();
+    }
+
+    private Category getCategoryByNAme(String name) {
+        Category category = null;
+        try {
+            category = (Category) em.createNamedQuery("Category.findCategoryByCategoryName").setParameter("name", name).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return category;
+    }
+
+    private Account findAccountByAccountUserEmail(String accountUserOnlyEmail) {
+        Account user = null;
+        try {
+            user = (Account) em.createNamedQuery("Account.findAccountByEmail").setParameter("email", accountUserOnlyEmail).getSingleResult();
+        } catch (NoResultException ex) {
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return user;
+    }
+
+    private AccountRole findAccountRoleByRoleType(RoleType roleType) {
+        AccountRole role = null;
+        try {
+            role = (AccountRole) em.createNamedQuery("Role.findRoleByRoleType").setParameter("roleType", roleType).getSingleResult();
+        } catch (NoResultException ex) {
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return role;
+    }
+
+    private Article getArticleByName(String name) {
+        Article article = null;
+        try {
+            article = (Article) em.createNamedQuery("Article.findArticleByArticleName").setParameter("name", name).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return article;
     }
 
     private Address findAddressByStreet(String street) {
@@ -340,5 +439,28 @@ public class DataGeneration2 {
             Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
         }
         return accountOrders;
+    }
+
+    private String generateRandomBirthDate() {
+        int day, month, year;
+        day = generateRandomInteger(1, 29);
+        month = generateRandomInteger(1, 13);
+        year = generateRandomInteger(1950, LocalDate.now().getYear() - 18);
+
+        return day + "-" + month + "-" + year;
+    }
+
+    private int generateRandomInteger(int min, int max) {
+        return random.nextInt(max - min) + min;
+    }
+
+    public Article getArticleById(Long id) {
+        Article article = null;
+        try {
+            article = (Article) em.createNamedQuery("Article.findArticleByArticleID").setParameter("id", id).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return article;
     }
 }
