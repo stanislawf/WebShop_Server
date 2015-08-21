@@ -27,14 +27,22 @@ public interface AccountManager {
   
   public Address getAddressByStreet(String street);
   
-   public Address getAddressByHomeAddress(boolean flag, List<Account> account);
+  public Address getAddressByStreetAndAccount(String street, Account account);
   
-  public List<Address> getAddressByAccount(List<Account> account);
+   public Address getAddressByHomeAddress(boolean flag, Account account);
+  
+  public Address getAddressByAccount(Account account);
 
   public boolean createAddress(Address address);
 
   public AccountRole getRoleByRoleType(RoleType role);
   
-   public Address getAddressByAccountAndHomeAddress(List<Account> accounts);
+  public boolean isAddressInDB(Address address);
+  
+  public void updateAddress(Address address);
+  
+  public void updateAccount(Account account);
+  
+  public boolean isAccountinDB(Account account);
   
 }

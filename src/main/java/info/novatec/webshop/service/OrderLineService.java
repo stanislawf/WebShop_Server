@@ -9,6 +9,9 @@ import info.novatec.webshop.entities.OrderLine;
 import info.novatec.webshop.persistence.OrderLineManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -17,6 +20,8 @@ import javax.persistence.PersistenceContext;
  *
  * @author sf
  */
+@Stateless
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class OrderLineService implements OrderLineManager {
 
     @PersistenceContext(unitName = "webshopPU")
@@ -32,6 +37,11 @@ public class OrderLineService implements OrderLineManager {
             Logger.getLogger(OrderLineService.class.getName()).log(Level.SEVERE, null, exeption);
         }
         return orderLine;
+    }
+    
+    @Override
+    public void createOrderLine(OrderLine orderL){
+        em.persist(orderL);
     }
 
 }

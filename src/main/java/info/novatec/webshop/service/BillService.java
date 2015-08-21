@@ -9,6 +9,9 @@ import info.novatec.webshop.entities.Bill;
 import info.novatec.webshop.persistence.BillManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
@@ -17,6 +20,8 @@ import javax.persistence.PersistenceContext;
  *
  * @author sf
  */
+@Stateless
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class BillService implements BillManager {
 
     @PersistenceContext(unitName = "webshopPU")
@@ -43,4 +48,31 @@ public class BillService implements BillManager {
         }
         return bill;
     }
+
+    @Override
+    public boolean doesBillExistInDB(Bill bill) {
+        return em.contains(bill);
+    }
+
+    @Override
+    public Bill getBillByAccountNumberAndOwner(Long accountNumber, String accountOwner) {
+        Bill bill = null;
+        try {
+            bill = (Bill) em.createNamedQuery("Bill.findBillByAccountNumberAndOwner").setParameter("accountOwner", accountOwner).setParameter("accountNumber", accountNumber).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(BillService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return bill;
+    }
+
+    @Override
+    public void updateBill(Bill bill) {
+          Bill tempBill = em.find(Bill.class, bill.getId());
+        if (tempBill != null) {
+            tempBill = bill;
+            em.merge(tempBill);
+        }
+    }
+    
+    
 }

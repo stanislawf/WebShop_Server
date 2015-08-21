@@ -56,6 +56,7 @@ public class DataGeneration2 {
     private String userEmail;
     private String userStreet;
     private String guestEmail;
+    private Guest guest;
 
     public DataGeneration2() {
     }
@@ -72,6 +73,7 @@ public class DataGeneration2 {
         article = new Article();
         order = new PurchaseOrder();
         random = new Random();
+        guest = new Guest();
         em.getTransaction().begin();
         testPersistAccountRole();
         testPersistCategoriesAndArticles();
@@ -86,7 +88,7 @@ public class DataGeneration2 {
     @Test
     public void persistGuestUserWithOrder() {
         testPersistGuest("hobit");
-        testCreateOrderForGuest(guestEmail, "hobit");
+        testCreateOrderForGuest(guestEmail, userStreet);
 
     }
 
@@ -230,9 +232,8 @@ public class DataGeneration2 {
         addresses.add(address);
 
         accountUser.setAddresses(addresses);
-        List<Account> accounts = new ArrayList();
-        accounts.add(accountUser);
-        address.setAccount(accounts);
+
+        address.setAccount(accountUser);
 
         em.getTransaction().begin();
 
@@ -250,20 +251,37 @@ public class DataGeneration2 {
     }
 
     private void testPersistGuest(String guestAdd) {
-
-        Guest guest = new Guest();
         guest.setEmail(guestAdd + "@email.de");
         guest.setFirstName(guestAdd + "FirstName");
         guest.setLastName(guestAdd + "LastName");
 
+        address.setStreet(guestAdd + "Teststrasse 13");
+        address.setCity(guestAdd + "Stadt");
+        address.setZipCode(String.valueOf(generateRandomInteger(01000, 95001)));
+        address.setCountry("Deutschland");
+
+        List<Address> addresses = new ArrayList();
+        addresses.add(address);
+
+        guest.setAddresses(addresses);
+
+        address.setAccount(guest);
+
+        Guest existentGuest = (Guest) findAccountByAccountUserEmail(guestAdd + "@email.de");
+
         em.getTransaction().begin();
-        em.persist(guest);
-        assertTrue("Database does not contain this guest", em.contains(guest));
+        if (existentGuest == null) {
+            em.persist(guest);
+            assertTrue("Database does not contain this guest", em.contains(guest));
+        }
+
         em.getTransaction().commit();
         guestEmail = guest.getEmail();
+        userStreet = address.getStreet();
+
     }
 
-    private void testCreateOrderForGuest(String accountEmail, String guestAddon) {
+    private void testCreateOrderForGuest(String accountEmail, String street) {
         em.getTransaction().begin();
         String date;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-M-yyyy");
@@ -281,16 +299,9 @@ public class DataGeneration2 {
         Assert.assertNotNull(guest);
         order.setAccount(guest);
 
-        Address guestAddress = new Address();
+        Address guestAddress = findAddressByStreet(street);
 
-        guestAddress.setStreet(guestAddon + "Teststrasse 13");
-        guestAddress.setCity(guestAddon + "Stadt");
-        guestAddress.setZipCode(String.valueOf(generateRandomInteger(01000, 95001)));
-        guestAddress.setCountry("Deutschland");
-
-        List<Account> guestUsers = new ArrayList();
-        guestUsers.add(accountUser);
-        guestAddress.setAccount(guestUsers);
+        guestAddress.setAccount(guest);
 
         order.setDeliveryAddress(guestAddress);
         order.setBillingAddress(guestAddress);
@@ -416,7 +427,7 @@ public class DataGeneration2 {
         try {
             address = (Address) em.createNamedQuery("Address.findAddressByStreet").setParameter("street", street).getSingleResult();
         } catch (NoResultException exeption) {
-            Logger.getLogger(DataGeneration.class.getName()).log(Level.SEVERE, null, exeption);
+            Logger.getLogger(DataGeneration2.class.getName()).log(Level.SEVERE, null, exeption);
         }
         return address;
     }

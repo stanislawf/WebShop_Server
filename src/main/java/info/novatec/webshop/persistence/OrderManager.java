@@ -17,4 +17,6 @@ public interface OrderManager {
        public PurchaseOrder getOrderById(Long id);
        
          public List<PurchaseOrder> getOrderByAccount(Account account);
+         
+          public boolean createOrder(PurchaseOrder order);
 }

@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -26,10 +27,11 @@ import javax.validation.constraints.NotNull;
 @Entity
 @NamedQueries({
         @NamedQuery(name = "Address.findAddressByAddressID", query = "SELECT addr FROM Address addr WHERE addr.id = :id"),
-        @NamedQuery(name = "Address.findAddressByAccount", query = "SELECT addr FROM Address addr WHERE :accounts member of addr.accounts"),
-        @NamedQuery(name = "Address.findAddressByAccountAndHomeAddress", query = "SELECT addr FROM Address addr WHERE :accounts member of addr.accounts AND addr.ishomeAddress = :ishomeAddress"),
+        @NamedQuery(name = "Address.findAddressByAccount", query = "SELECT addr FROM Address addr WHERE addr.account = :account"),
           @NamedQuery(name = "Address.findAddressByStreet", query = "SELECT addr FROM Address addr WHERE addr.street = :street"),
-            @NamedQuery(name = "Address.findAddressByHomeAddress", query = "SELECT addr FROM Address addr WHERE addr.ishomeAddress = :flag AND addr.accounts = :accounts"),
+          @NamedQuery(name = "Address.findAddressByHomeAddress", query = "SELECT addr FROM Address addr WHERE addr.isHomeAddress = :flag AND addr.account = :account"),
+           @NamedQuery(name = "Address.findAddressByStreetAndAccount", query = "SELECT addr FROM Address addr WHERE addr.street = :street AND addr.account = :account")
+          
 })
 public class Address implements Serializable {
 
@@ -52,21 +54,29 @@ public class Address implements Serializable {
     private String country;
     
     @NotNull
-    private boolean ishomeAddress;
+    @ManyToOne
+    private Account account;
     
     @NotNull
-    @ManyToMany(mappedBy = "addresses", targetEntity = AccountUser.class)
-    private List<Account> accounts;
+    private boolean isHomeAddress;
     
     
     @ElementCollection
-    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "deliveryAddress")    
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "deliveryAddress", cascade = CascadeType.ALL)    
     private List<PurchaseOrder> deliveryOrder;
     
     @ElementCollection
-    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "billingAddress")
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "billingAddress", cascade = CascadeType.ALL)
     private List<PurchaseOrder> billingOrder;
 
+    public boolean isIsHomeAddress() {
+        return isHomeAddress;
+    }
+
+    public void setIsHomeAddress(boolean isHomeAddress) {
+        this.isHomeAddress = isHomeAddress;
+    }
+    
     public Long getId() {
         return id;
     }
@@ -107,12 +117,12 @@ public class Address implements Serializable {
         this.country = country;
     }
 
-    public List<Account> getAccount() {
-        return accounts;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setAccount(List<Account> accounts) {
-        this.accounts = accounts;
+    public void setAccount(Account accounts) {
+        this.account = accounts;
     }
 
     public List<PurchaseOrder> getDeliveryOrder() {
@@ -129,15 +139,5 @@ public class Address implements Serializable {
 
     public void setBillingOrder(List<PurchaseOrder> billingOrder) {
         this.billingOrder = billingOrder;
-    }
-
-    public boolean isIshomeAddress() {
-        return ishomeAddress;
-    }
-
-    public void setIshomeAddress(boolean ishomeAddress) {
-        this.ishomeAddress = ishomeAddress;
-    }
-    
-    
+    }    
 }

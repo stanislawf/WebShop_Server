@@ -13,4 +13,6 @@ import info.novatec.webshop.entities.OrderLine;
  */
 public interface OrderLineManager {
        public OrderLine getOrderLineById(Long id);
+       
+       public void createOrderLine(OrderLine orderLine);
 }

@@ -7,6 +7,7 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,6 +29,7 @@ import org.hibernate.validator.constraints.NotEmpty;
      @NamedQuery(name = "Bill.findBillByBillID", query = "SELECT bl FROM Bill bl WHERE bl.id = :id"),
      @NamedQuery(name = "Bill.findBillByAccountOwner", query = "SELECT bl FROM Bill bl WHERE bl.accountOwner = :accountOwner"),
      @NamedQuery(name = "Bill.findBillByAccountNumber", query = "SELECT bl FROM Bill bl WHERE bl.accountNumber = :accountNumber"),
+     @NamedQuery(name = "Bill.findBillByAccountNumberAndOwner", query = "SELECT bl FROM Bill bl WHERE bl.accountNumber = :accountNumber AND bl.accountOwner =:accountOwner"),
 })
 public class Bill implements Serializable {
     

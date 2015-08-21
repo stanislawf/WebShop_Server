@@ -19,6 +19,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -30,6 +31,7 @@ public class AccountService implements AccountManager {
 
     @PersistenceContext(unitName = "webshopPU")
     private EntityManager em;
+//    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
     @Override
     public boolean createAccount(Account account) {
@@ -50,7 +52,9 @@ public class AccountService implements AccountManager {
 
     @Override
     public boolean createAddress(Address address) {
+
         em.persist(address);
+
         return em.contains(address);
     }
 
@@ -88,10 +92,21 @@ public class AccountService implements AccountManager {
     }
 
     @Override
-    public Address getAddressByHomeAddress(boolean flag, List<Account> accounts) {
+    public Address getAddressByStreetAndAccount(String street, Account account) {
         Address address = null;
         try {
-            address = (Address) em.createNamedQuery("Address.findAddressByHomeAddress").setParameter("flag", flag).setParameter("accounts", accounts).getSingleResult();
+            address = (Address) em.createNamedQuery("Address.findAddressByStreetAndAccount").setParameter("street", street).setParameter("account", account).getSingleResult();
+        } catch (NoResultException exeption) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
+        }
+        return address;
+    }
+
+    @Override
+    public Address getAddressByHomeAddress(boolean homeAddress, Account account) {
+        Address address = null;
+        try {
+            address = (Address) em.createNamedQuery("Address.findAddressByHomeAddress").setParameter("flag", homeAddress).setParameter("account", account).getSingleResult();
         } catch (NoResultException exeption) {
             Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
         }
@@ -111,25 +126,38 @@ public class AccountService implements AccountManager {
     }
 
     @Override
-    public List<Address> getAddressByAccount(List<Account> accounts) {
-        List<Address> addresses = null;
-        try {
-            addresses = (List<Address>) em.createNamedQuery("Address.findAddressByAccount").setParameter("accounts", accounts).getResultList();
-        } catch (NoResultException exeption) {
-            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
-        }
-        return addresses;
-    }
-    
-    @Override
-    public Address getAddressByAccountAndHomeAddress(List<Account> accounts) {
+    public Address getAddressByAccount(Account account) {
         Address addresses = null;
         try {
-            addresses = (Address) em.createNamedQuery("Address.findAddressByAccountAndHomeAddress").setParameter("accounts", accounts).setParameter("ishomeAddress", true).getSingleResult();
+            addresses = (Address) em.createNamedQuery("Address.findAddressByAccount").setParameter("account", account).getResultList();
         } catch (NoResultException exeption) {
             Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
         }
         return addresses;
     }
-    
+
+    @Override
+    public boolean isAddressInDB(Address address) {
+        return em.contains(address);
+    }
+
+    @Override
+    public void updateAddress(Address address) {
+        em.merge(address);
+    }
+
+    @Override
+    public void updateAccount(Account account) {
+        Account tempAccount = em.find(Account.class, account.getId());
+        if (tempAccount != null) {
+            tempAccount = account;
+            em.merge(tempAccount);
+        }
+    }
+
+    @Override
+    public boolean isAccountinDB(Account account) {
+        return em.contains(account);
+    }
+
 }

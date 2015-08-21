@@ -38,13 +38,7 @@ public class AccountUser extends Account implements Serializable{
     @NotNull
     private boolean isActive;
     
-    @NotNull
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-      name="account_address",
-      joinColumns={@JoinColumn(name="accountID", referencedColumnName="id")},
-      inverseJoinColumns={@JoinColumn(name="addressID", referencedColumnName="id")})
-    private List<Address> addresses;
+    
  
     @NotNull
     @ManyToMany
@@ -86,14 +80,6 @@ public class AccountUser extends Account implements Serializable{
 
     public void setIsActive(boolean isActive) {
         this.isActive = isActive;
-    }
-
-    public List<Address> getAddresses() {
-        return addresses;
-    }
-
-    public void setAddresses(List<Address> homeAddress) {
-        this.addresses = homeAddress;
     }
 
     public List<AccountRole> getRoles() {

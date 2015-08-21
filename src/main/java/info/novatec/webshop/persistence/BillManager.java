@@ -17,5 +17,11 @@ public interface BillManager {
      public Bill getBillById(Long id);
      
      public Bill getBillByAccountOwner(String accountOwner);
+     
+     public boolean doesBillExistInDB(Bill bill);
+     
+     public Bill getBillByAccountNumberAndOwner(Long accountNumber, String accountOwner);
+     
+     public void updateBill(Bill bill);
     
 }

@@ -15,6 +15,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -51,7 +54,18 @@ public abstract class Account implements Serializable {
     @ElementCollection
     private List<PurchaseOrder> orders;
     
-    //-----------Setter & Getter -------------
+    @NotNull
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "account", targetEntity = Address.class)
+    @ElementCollection
+    private List<Address> addresses;
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
 
     public Long getId() {
         return id;
