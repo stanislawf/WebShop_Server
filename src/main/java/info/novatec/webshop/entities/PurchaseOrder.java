@@ -53,11 +53,11 @@ public class PurchaseOrder implements Serializable {
     private List<OrderLine> orderLines;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Address deliveryAddress;
 
     @NotNull
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Address billingAddress;
 
     @ManyToOne(cascade = CascadeType.ALL, optional = true)
