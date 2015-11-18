@@ -7,6 +7,7 @@ package info.novatec.webshop.entities;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -19,6 +20,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
+
+
 
 /**
  *
@@ -62,11 +65,11 @@ public class Address implements Serializable {
     
     
     @ElementCollection
-    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "deliveryAddress", cascade = CascadeType.ALL)    
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "deliveryAddress")    
     private List<PurchaseOrder> deliveryOrder;
     
     @ElementCollection
-    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "billingAddress", cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = PurchaseOrder.class, mappedBy = "billingAddress")
     private List<PurchaseOrder> billingOrder;
 
     public boolean isIsHomeAddress() {
@@ -140,4 +143,42 @@ public class Address implements Serializable {
     public void setBillingOrder(List<PurchaseOrder> billingOrder) {
         this.billingOrder = billingOrder;
     }    
+
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Address other = (Address) obj;
+        if (!Objects.equals(this.id, other.id)) {
+            return false;
+        }
+        if (!Objects.equals(this.street, other.street)) {
+            return false;
+        }
+        if (!Objects.equals(this.city, other.city)) {
+            return false;
+        }
+        if (!Objects.equals(this.zipCode, other.zipCode)) {
+            return false;
+        }
+        return Objects.equals(this.country, other.country);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Objects.hashCode(this.id);
+        hash = 47 * hash + Objects.hashCode(this.street);
+        hash = 47 * hash + Objects.hashCode(this.city);
+        hash = 47 * hash + Objects.hashCode(this.zipCode);
+        hash = 47 * hash + Objects.hashCode(this.country);
+        return hash;
+    }
+    
 }

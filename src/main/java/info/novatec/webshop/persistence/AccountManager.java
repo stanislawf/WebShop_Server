@@ -45,4 +45,8 @@ public interface AccountManager {
   
   public boolean isAccountinDB(Account account);
   
+  public Address findAddress(Address address);
+  
+  public Account findAccount(Account account);
+  
 }

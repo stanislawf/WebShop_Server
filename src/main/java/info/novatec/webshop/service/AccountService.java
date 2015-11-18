@@ -10,6 +10,7 @@ import info.novatec.webshop.entities.Address;
 import info.novatec.webshop.entities.AccountRole;
 import info.novatec.webshop.enums.RoleType;
 import info.novatec.webshop.persistence.AccountManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,7 @@ public class AccountService implements AccountManager {
 
     @PersistenceContext(unitName = "webshopPU")
     private EntityManager em;
-//    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AccountService.class);
 
     @Override
     public boolean createAccount(Account account) {
@@ -74,6 +75,7 @@ public class AccountService implements AccountManager {
         Address address = null;
         try {
             address = (Address) em.createNamedQuery("Address.findAddressByAddressID").setParameter("id", id).getSingleResult();
+            LOGGER.info("Adresse: {}", address.getStreet());
         } catch (NoResultException exeption) {
             Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exeption);
         }
@@ -148,10 +150,25 @@ public class AccountService implements AccountManager {
 
     @Override
     public void updateAccount(Account account) {
+        try{
         Account tempAccount = em.find(Account.class, account.getId());
+        List<Address> addresses = account.getAddresses();
+        List<Address> tempAddresses = new ArrayList();
+        for(Address address: addresses){
+            Address tempAddress = em.find(Address.class, address.getId());
+            if(tempAddress != null){
+                tempAddresses.add(tempAddress);
+            }else{
+                tempAddresses.add(address);
+            }
+        }
+        account.setAddresses(tempAddresses);
         if (tempAccount != null) {
             tempAccount = account;
             em.merge(tempAccount);
+        }
+         } catch (IllegalArgumentException exception) {
+            Logger.getLogger(AccountService.class.getName()).log(Level.SEVERE, null, exception);
         }
     }
 
@@ -159,5 +176,17 @@ public class AccountService implements AccountManager {
     public boolean isAccountinDB(Account account) {
         return em.contains(account);
     }
+
+    @Override
+    public Address findAddress(Address address) {
+        return em.find(Address.class, address.getId());
+    }
+    
+    @Override
+    public Account findAccount(Account account) {
+        return em.find(Account.class, account.getId());
+    }
+    
+    
 
 }
